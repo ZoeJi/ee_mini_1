@@ -19,6 +19,7 @@ public:
     list<gateType*>* getTypeList();
     gateType* searchGateType(string name);
     list<gate*>* getGatelist();
+    gate* searchNameAndType(string name, string type);
     gate* searchGate(string name);
 };
 

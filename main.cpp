@@ -32,6 +32,9 @@ int main(int argc, char *argv[]) {
     list<gate*> temp;
     vector<string> faninVect;
     vector<string>::iterator j;
+    list<gate*>::iterator k;
+
+    vector<string>::iterator i;
 
     int inputCount = 0, outputCount = 0;
     ifstream fileInput ( argv[2] );
@@ -85,35 +88,42 @@ int main(int argc, char *argv[]) {
                                     thisGateType = readGateType(aline);
                                     faninVect = readGateFanin(aline);
 
+
+//                                    for(i = faninVect.begin(); i != faninVect.end(); i++){
+//                                        cout << (*i) << endl;
+//                                    }
+
+                                    newGate = new gate(gateName, thisGateType, faninVect);
+//                                    newGate->setTypeName(thisGateType);
+
 //                                    newGate = searchMetGates(gateName, &temp);
 
-                                    // if this gate did not meet before
-                                    if(newGate == NULL) {
-                                        newGate = new gate(gateName, thisGateType, faninVect);
-                                        newGate->setTypeName(thisGateType);
-                                        myGateList.getGatelist()->push_back(newGate);
+                                    if(myGateList.searchNameAndType(gateName, "OUTP") != NULL){
+                                        newGate->addFanoutGates("OUTP");
                                     }
-                                    else{
+
+                                    myGateList.getGatelist()->push_back(newGate);
+
+//                                    cout << myGateList.searchGate(gateName);
+
+                                    // if this gate did not meet before
+//                                    if(newGate == NULL) {
+//                                        newGate = new gate(gateName, thisGateType, faninVect);
+//                                        newGate->setTypeName(thisGateType);
+//                                        myGateList.getGatelist()->push_back(newGate);
+//                                    }
+//                                    else{
                                     // met this gate before
 //                                        myGateList.getGatelist()->push_back(newGate);
-                                        newGate = new gate(gateName, thisGateType, faninVect);
-                                        newGate->addFanoutGates("OUTP");
-                                        myGateList.getGatelist()->push_back(newGate);
-                                    }
+//                                        newGate = new gate(gateName, thisGateType, faninVect);
+//                                        newGate->addFanoutGates("OUTP");
+//                                        myGateList.getGatelist()->push_back(newGate);
+//                                    }
 
 //                                    // handle fanout
 //                                    for( j = faninVect.begin(); j != faninVect.end(); j++){
 //                                        fanoutGate = myGateList.searchGate((*j));
 //                                        fanoutGate->addFanoutGates(gateName);
-//                                    }
-
-                                    // if this gate has meet before but is output gate
-//                                    else {
-//                                        if(newGate->getTypeName() == "output"){
-//                                            myGateList.getGatelist()->push_back(newGate);
-//                                            newGate = new gate();
-//
-//                                        }
 //                                    }
 
                                 }
@@ -127,7 +137,19 @@ int main(int argc, char *argv[]) {
 
         }
 
-        write_result(inputCount, outputCount, argv[2], &myGateList);
+//        write_result(inputCount, outputCount, argv[2], &myGateList);
+        for( k = myGateList.getGatelist()->begin(); k != myGateList.getGatelist()->end(); k++){
+            if((*k)->getTypeName() != "INP" && (*k)->getTypeName() != "OUTP" && (*k)->getTypeName() != ""){
+                cout << (*k)->getTypeName() << "-" << (*k)->getGateName() << ": ";
+
+                for(i = (*k)->getFaninVector().begin(); i != (*k)->getFaninVector().end(); i++){
+
+                    cout << (*i) << ", ";
+                }
+                cout << endl;
+            }
+        }
+
     }
 }
 
@@ -166,21 +188,25 @@ void write_result(int inputCount, int outputCount, string fileName, gateList* my
     result << endl;
     result << "Fanin..." << endl;
 
-    for( j = myGateList->getGatelist()->begin(); j != myGateList->getGatelist()->end(); j++){
-        if((*j)->getTypeName() != "INP" && (*j)->getTypeName() != "OUTP" && (*j)->getTypeName() != ""){
-            result << (*j)->getTypeName() << "-" << (*j)->getGateName() << ": ";
-            for(i = (*j)->getFaninVector().begin(); i != (*j)->getFaninVector().end(); i++){
-                if(myGateList->searchGate((*i)) == NULL){
-                    result << endl << "NULLLLLLLLLLLLLLLLLLLLLLLLLLL" << endl;
-                }
-                else {
-
+//    for( j = myGateList->getGatelist()->begin(); j != myGateList->getGatelist()->end(); j++){
+//        if((*j)->getTypeName() != "INP" && (*j)->getTypeName() != "OUTP" && (*j)->getTypeName() != ""){
+//            result << (*j)->getTypeName() << "-" << (*j)->getGateName() << ": ";
+//
+//            for(i = (*j)->getFaninVector().begin(); i != (*j)->getFaninVector().end(); i++){
+//
+//                cout << (*i) << endl;
+//                cout << myGateList->searchGate((*i))->getGateName() << endl;
+//                if( == NULL){
+//                    result << endl << "NULLLLLLLLLLLLLLLLLLLLLLLLLLL" << endl;
+//                }
+//                else {
+//
 //                    result << thisGate->getTypeName() << "-" << (*i) << ", ";
-                }
-            }
-            result << endl;
-        }
-    }
+//                }
+//            }
+//            result << endl;
+//        }
+//    }
 
     result << "------------------------------------------------" << endl;
     result.close();

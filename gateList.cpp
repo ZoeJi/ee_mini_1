@@ -20,12 +20,25 @@ list<gateType*>* gateList::getTypeList(){
     return &typeList;
 }
 
-gate *gateList::searchGate(string name) {
+gate* gateList::searchGate(string name) {
     list<gate*>::iterator i;
     for(i = gateList.begin(); i != gateList.end(); i++){
         if ((*i)->getGateName()==name)
         {
             return *i;
+        }
+    }
+    return NULL;
+}
+
+gate* gateList::searchNameAndType(string name, string type)
+{
+    list<gate*>::iterator j;
+    for(j=gateList.begin(); j!=gateList.end();j++)
+    {
+        if ((*j)->getGateName() == name && (*j)->getTypeName() == type)
+        {
+            return *j;
         }
     }
     return NULL;
