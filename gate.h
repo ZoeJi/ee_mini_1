@@ -16,19 +16,7 @@ private:
 //    vector<gate*>* fanOutGates;
     list<string> fanInGates;
     list<string> fanOutGates;
-    /*
-     * Use int to encode gate type:
-     *  input: 0
-     *  output: 1
-     *  and: 2
-     *  or: 3
-     *  nan: 4
-     *  not: 5
-     *  nor: 6
-     *  buff: 7
-     *  xor: 8
-     */
-//    int typeCode;
+
 public:
     gate();
     gate(string name, string type);
