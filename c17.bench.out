@@ -4,12 +4,18 @@
 6 NAND gates
 
 Fanout...
+NAND-10: OUTP-22, 
+NAND-11: NAND-16, NAND-19, 
+NAND-16: OUTP-22, OUTP-23, 
+NAND-19: OUTP-23, 
+NAND-22: -OUTP, 
+NAND-23: -OUTP, 
 
 Fanin...
-NAND-10: 
-NAND-11: 
-NAND-16: 
-NAND-19: 
-NAND-22: 
-NAND-23: 
+NAND-10: INP-1, INP-3, 
+NAND-11: INP-3, INP-6, 
+NAND-16: INP-2, NAND-11, 
+NAND-19: NAND-11, INP-7, 
+NAND-22: NAND-10, NAND-16, 
+NAND-23: NAND-16, NAND-19, 
 ------------------------------------------------

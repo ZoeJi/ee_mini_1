@@ -14,8 +14,7 @@ void write_result(int inputCount, int outputCount, string fileName, gateList* my
 string getIOname(string str);
 string readGateType(string str);
 string readGateName(string str);
-vector<string> readGateFanin(string str);
-gate* searchMetGates(string name, list<gate*>* temp);
+list<string> readGateFanin(string str);
 
 
 
@@ -30,11 +29,11 @@ int main(int argc, char *argv[]) {
     gate* outputGate;
     gateList myGateList;
     list<gate*> temp;
-    vector<string> faninVect;
-    vector<string>::iterator j;
+    list<string> faninVect;
+    list<string>::iterator j;
     list<gate*>::iterator k;
 
-    vector<string>::iterator i;
+    list<string>::iterator i;
 
     int inputCount = 0, outputCount = 0;
     ifstream fileInput ( argv[2] );
@@ -88,23 +87,13 @@ int main(int argc, char *argv[]) {
                                     thisGateType = readGateType(aline);
                                     faninVect = readGateFanin(aline);
 
-
-//                                    for(i = faninVect.begin(); i != faninVect.end(); i++){
-//                                        cout << (*i) << endl;
-//                                    }
-
                                     newGate = new gate(gateName, thisGateType, faninVect);
-//                                    newGate->setTypeName(thisGateType);
-
-//                                    newGate = searchMetGates(gateName, &temp);
 
                                     if(myGateList.searchNameAndType(gateName, "OUTP") != NULL){
                                         newGate->addFanoutGates("OUTP");
                                     }
 
                                     myGateList.getGatelist()->push_back(newGate);
-
-//                                    cout << myGateList.searchGate(gateName);
 
                                     // if this gate did not meet before
 //                                    if(newGate == NULL) {
@@ -120,7 +109,7 @@ int main(int argc, char *argv[]) {
 //                                        myGateList.getGatelist()->push_back(newGate);
 //                                    }
 
-//                                    // handle fanout
+                                    // handle fanout
 //                                    for( j = faninVect.begin(); j != faninVect.end(); j++){
 //                                        fanoutGate = myGateList.searchGate((*j));
 //                                        fanoutGate->addFanoutGates(gateName);
@@ -137,18 +126,7 @@ int main(int argc, char *argv[]) {
 
         }
 
-//        write_result(inputCount, outputCount, argv[2], &myGateList);
-        for( k = myGateList.getGatelist()->begin(); k != myGateList.getGatelist()->end(); k++){
-            if((*k)->getTypeName() != "INP" && (*k)->getTypeName() != "OUTP" && (*k)->getTypeName() != ""){
-                cout << (*k)->getTypeName() << "-" << (*k)->getGateName() << ": ";
-
-                for(i = (*k)->getFaninVector().begin(); i != (*k)->getFaninVector().end(); i++){
-
-                    cout << (*i) << ", ";
-                }
-                cout << endl;
-            }
-        }
+        write_result(inputCount, outputCount, argv[2], &myGateList);
 
     }
 }
@@ -158,7 +136,7 @@ void write_result(int inputCount, int outputCount, string fileName, gateList* my
     ofstream result;
     list<gateType*>::iterator k;
     list<gate*>::iterator j;
-    vector<string>::iterator i;
+    list<string>::iterator i;
     gate* thisGate;
 
     result.open(resultFile.c_str());
@@ -173,40 +151,31 @@ void write_result(int inputCount, int outputCount, string fileName, gateList* my
     result << endl;
     result << "Fanout..." << endl;
 
-//    for( j = myGateList->getGatelist()->begin(); j != myGateList->getGatelist()->end(); j++){
-//        if((*j)->getTypeName() != "INP" && (*j)->getTypeName() != "OUTP" && (*j)->getTypeName() != ""){
-//            result << (*j)->getTypeName() << "-" << (*j)->getGateName() << ": ";
-//            for(i = (*j)->getFanoutVector().begin(); i != (*j)->getFanoutVector().end(); i++){
-//                thisGate = myGateList->searchGate((*i));
-//
-//                result << thisGate->getTypeName() << "-" << (*i) << ", ";
-//            }
-//            result << endl;
-//        }
-//    }
+    for( j = myGateList->getGatelist()->begin(); j != myGateList->getGatelist()->end(); j++){
+        if((*j)->getTypeName() != "INP" && (*j)->getTypeName() != "OUTP" && (*j)->getTypeName() != ""){
+            result << (*j)->getTypeName() << "-" << (*j)->getGateName() << ": ";
+            for(i = (*j)->getFanoutVector()->begin(); i != (*j)->getFanoutVector()->end(); i++){
+                thisGate = myGateList->searchGate((*i));
+
+                result << thisGate->getTypeName() << "-" << (*i) << ", ";
+            }
+            result << endl;
+        }
+    }
 
     result << endl;
     result << "Fanin..." << endl;
 
-//    for( j = myGateList->getGatelist()->begin(); j != myGateList->getGatelist()->end(); j++){
-//        if((*j)->getTypeName() != "INP" && (*j)->getTypeName() != "OUTP" && (*j)->getTypeName() != ""){
-//            result << (*j)->getTypeName() << "-" << (*j)->getGateName() << ": ";
-//
-//            for(i = (*j)->getFaninVector().begin(); i != (*j)->getFaninVector().end(); i++){
-//
-//                cout << (*i) << endl;
-//                cout << myGateList->searchGate((*i))->getGateName() << endl;
-//                if( == NULL){
-//                    result << endl << "NULLLLLLLLLLLLLLLLLLLLLLLLLLL" << endl;
-//                }
-//                else {
-//
-//                    result << thisGate->getTypeName() << "-" << (*i) << ", ";
-//                }
-//            }
-//            result << endl;
-//        }
-//    }
+    for( j = myGateList->getGatelist()->begin(); j != myGateList->getGatelist()->end(); j++){
+        if((*j)->getTypeName() != "INP" && (*j)->getTypeName() != "OUTP" && (*j)->getTypeName() != ""){
+            result << (*j)->getTypeName() << "-" << (*j)->getGateName() << ": ";
+
+            for(i = (*j)->getFaninVector()->begin(); i != (*j)->getFaninVector()->end(); i++){
+                result << myGateList->searchGate((*i))->getTypeName() << "-" << (*i) << ", ";
+            }
+            result << endl;
+        }
+    }
 
     result << "------------------------------------------------" << endl;
     result.close();
@@ -271,15 +240,15 @@ string readGateName(string str)
 
 }
 
-vector<string> readGateFanin(string str)
+list<string> readGateFanin(string str)
 {
     int a;
     string subStr;
-    vector<string> vector1;
-    str=getIOname(str);
+    list<string> vector1;
+    str = getIOname(str);
     while(str.find(',')!=-1)
     {
-        a=str.find(',');
+        a = str.find(',');
         subStr=str.substr(0,a);
         /*discards spaces at the head of the string*/
         while(*(subStr.begin())==' ')
@@ -306,20 +275,4 @@ vector<string> readGateFanin(string str)
     }
     vector1.push_back(str);
     return vector1;
-}
-
-gate* searchMetGates(string name, list<gate*>* temp)
-{
-    list<gate*>::iterator i;
-    gate* remove;
-    for(i=temp->begin();i!=temp->end();i++)
-    {
-        if((*i)->getGateName() == name)
-        {
-            remove=*i;
-            temp->erase(i);
-            return remove;
-        }
-    }
-    return NULL;
 }
