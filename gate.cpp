@@ -11,11 +11,16 @@ gate::gate()
     gateName = "init";
 }
 
-gate::gate(string name, string type, list<string> fanin) {
+gate::gate(string name)
+{
     gateName = name;
-    gateType = type;
-    fanInGates = fanin;
 }
+
+//gate::gate(string name, string type, vector<string> fanin) {
+//    gateName = name;
+//    gateType = type;
+//    fanInGates = fanin;
+//}
 
 gate::gate(string name, string type) {
     gateName = name;
@@ -36,14 +41,12 @@ string gate::getTypeName()
     return gateType;
 }
 
-list<string>* gate::getFaninVector() {
+vector<gate*>* gate::getFainPtrs()
+{
     return &fanInGates;
 }
 
-list<string>* gate::getFanoutVector() {
+vector<gate*>* gate::getFanoutPtrs()
+{
     return &fanOutGates;
-}
-
-void gate::addFanoutGates(string newFanout){
-    fanOutGates.push_back(newFanout);
 }

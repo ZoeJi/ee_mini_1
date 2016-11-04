@@ -14,7 +14,7 @@ void write_result_ckt(int inputCount, int outputCount, string fileName, gateList
 string getIOname(string str);
 string readGateType(string str);
 string readGateName(string str);
-list<string> readGateFanin(string str);
+vector<string> readGateFanin(string str);
 
 
 
@@ -26,22 +26,14 @@ int main(int argc, char *argv[]) {
     string cellName;
     gateType* newGateType;
     gate* newGate;
-    gate* fanoutGate;
-    gate* outputGate;
+    gate* aFaninGate;;
+    gate* existGate;
+    gate* inputGate;
     gateList myGateList;
-    list<gate*> temp;
-    list<string> faninVect;
-    list<string>::iterator j;
-    list<gate*>::iterator k;
-
-    list<string>::iterator i;
+    vector<string> faninVect;
 
     int inputCount = 0, outputCount = 0;
     ifstream fileInput ( argv[2] );
-
-    // init myGateList
-    newGate = new gate("OUTP", "");
-    myGateList.getGatelist()->push_back(newGate);
 
     if ( argc < 3 ) // argc should be more than 3 for correct execution
         cout<<"usage: "<< argv[0] <<" <read command> <filename>\n <read command> options: read_ckt, read_nldm\n";
@@ -67,7 +59,18 @@ int main(int argc, char *argv[]) {
                                     outputCount++;
                                     gateName = getIOname(aline);
                                     newGate = new gate(gateName, "OUTP");
+
+                                    inputGate = myGateList.searchGate(gateName);
+
+                                    /*check if exist input directly connect to output*/
+                                    if(inputGate != NULL)
+                                    {
+                                        newGate->getFainPtrs()->push_back(inputGate);
+                                        inputGate->getFanoutPtrs()->push_back(newGate);
+                                    }
+
                                     myGateList.getGatelist()->push_back(newGate);
+
                                 }
                                 // other logical gates
                                 else {
@@ -88,35 +91,45 @@ int main(int argc, char *argv[]) {
                                     thisGateType = readGateType(aline);
                                     faninVect = readGateFanin(aline);
 
-                                    newGate = new gate(gateName, thisGateType, faninVect);
-
-                                    if(myGateList.searchNameAndType(gateName, "OUTP") != NULL){
-                                        newGate->addFanoutGates("OUTP");
+                                    /*check if this gate already meet before*/
+                                    newGate = myGateList.searchGate(gateName);
+                                    /*if not met this gate before*/
+                                    if(newGate == NULL){
+                                        newGate = new gate(gateName, thisGateType);
+                                        myGateList.getGatelist()->push_back(newGate);
+                                    }
+                                    /*if met this gate before*/
+                                    else {
+                                        if(newGate->getTypeName() == "OUTP"){
+                                            existGate = newGate;
+                                            newGate = new gate(gateName, thisGateType);
+                                            existGate->getFainPtrs()->push_back(newGate);
+                                            newGate->getFanoutPtrs()->push_back(existGate);
+                                            myGateList.getGatelist()->push_back(newGate);
+                                        }
+                                        else {
+                                            newGate->setTypeName(thisGateType);
+                                        }
                                     }
 
-                                    myGateList.getGatelist()->push_back(newGate);
-
-                                    // if this gate did not meet before
-//                                    if(newGate == NULL) {
-//                                        newGate = new gate(gateName, thisGateType, faninVect);
-//                                        newGate->setTypeName(thisGateType);
-//                                        myGateList.getGatelist()->push_back(newGate);
-//                                    }
-//                                    else{
-                                    // met this gate before
-//                                        myGateList.getGatelist()->push_back(newGate);
-//                                        newGate = new gate(gateName, thisGateType, faninVect);
-//                                        newGate->addFanoutGates("OUTP");
-//                                        myGateList.getGatelist()->push_back(newGate);
-//                                    }
-
-                                    // handle fanout
-//                                    for( j = faninVect.begin(); j != faninVect.end(); j++){
-//                                        string str = *j;
-//                                        cout << myGateList.searchGate(str) << endl;
-//                                        fanoutGate = myGateList.searchGate((*j));
-//                                        fanoutGate->addFanoutGates(gateName);
-//                                    }
+                                    // handle Fan-in
+                                    vector<string>::iterator j;
+                                    for(j=faninVect.begin();j!=faninVect.end();j++)
+                                    {
+                                        aFaninGate = myGateList.searchGate(*j);
+                                        /* if met this gate before*/
+                                        if(aFaninGate != NULL && aFaninGate->getTypeName() != "OUTP") {
+                                            newGate->getFainPtrs()->push_back(aFaninGate);
+                                            aFaninGate->getFanoutPtrs()->push_back(newGate);
+                                        }
+                                        /* if not met this gate before*/
+                                        else {
+                                            aFaninGate = new gate(*j);
+                                            newGate->getFainPtrs()->push_back(aFaninGate);
+                                            aFaninGate->getFanoutPtrs()->push_back(newGate);
+                                            myGateList.getGatelist()->push_back(aFaninGate);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -160,7 +173,7 @@ void write_result_ckt(int inputCount, int outputCount, string fileName, gateList
     ofstream result;
     list<gateType*>::iterator k;
     list<gate*>::iterator j;
-    list<string>::iterator i;
+    vector<gate*>::iterator i;
     gate* thisGate;
 
     result.open(resultFile.c_str());
@@ -176,12 +189,12 @@ void write_result_ckt(int inputCount, int outputCount, string fileName, gateList
     result << "Fanout..." << endl;
 
     for( j = myGateList->getGatelist()->begin(); j != myGateList->getGatelist()->end(); j++){
-        if((*j)->getTypeName() != "INP" && (*j)->getTypeName() != "OUTP" && (*j)->getTypeName() != ""){
+        if((*j)->getTypeName() != "INP" && (*j)->getTypeName() != "OUTP"){
             result << (*j)->getTypeName() << "-" << (*j)->getGateName() << ": ";
-            for(i = (*j)->getFanoutVector()->begin(); i != (*j)->getFanoutVector()->end(); i++){
-                thisGate = myGateList->searchGate((*i));
 
-                result << thisGate->getTypeName() << "-" << (*i) << ", ";
+            for(i = (*j)->getFanoutPtrs()->begin(); i != (*j)->getFanoutPtrs()->end(); i++){
+                thisGate = (*i);
+                result << thisGate->getTypeName() << "-" << thisGate->getGateName() << ", ";
             }
             result << endl;
         }
@@ -194,8 +207,9 @@ void write_result_ckt(int inputCount, int outputCount, string fileName, gateList
         if((*j)->getTypeName() != "INP" && (*j)->getTypeName() != "OUTP" && (*j)->getTypeName() != ""){
             result << (*j)->getTypeName() << "-" << (*j)->getGateName() << ": ";
 
-            for(i = (*j)->getFaninVector()->begin(); i != (*j)->getFaninVector()->end(); i++){
-                result << myGateList->searchGate((*i))->getTypeName() << "-" << (*i) << ", ";
+            for(i = (*j)->getFainPtrs()->begin(); i != (*j)->getFainPtrs()->end(); i++){
+                thisGate = (*i);
+                result << thisGate->getTypeName() << "-" << thisGate->getGateName() << ", ";
             }
             result << endl;
         }
@@ -264,11 +278,11 @@ string readGateName(string str)
 
 }
 
-list<string> readGateFanin(string str)
+vector<string> readGateFanin(string str)
 {
     int a;
     string subStr;
-    list<string> vector1;
+    vector<string> vector1;
     str = getIOname(str);
     while(str.find(',')!=-1)
     {
@@ -299,23 +313,4 @@ list<string> readGateFanin(string str)
     }
     vector1.push_back(str);
     return vector1;
-}
-
-string getCellName(string str) {
-    int head,tail;
-    head=str.find('(')+1;
-    tail=str.find(')');
-    tail=tail-head;
-    str =str.substr(head,tail);
-    /*discard spaces at the head of the string*/
-    while(*(str.begin())==' ')
-    {
-        str.erase(str.begin());
-    }
-    /*discards spaces at the tail of the string*/
-    while(*(str.rbegin())==' ')
-    {
-        str=str.substr(0,str.size()-1);
-    }
-    return str;
 }

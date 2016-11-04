@@ -12,6 +12,7 @@ gateType::gateType(string name) {
 void gateType::setTypeName(string name){
     typeName = name;
 }
+
 string gateType::getTypeName(){
     return typeName;
 }
