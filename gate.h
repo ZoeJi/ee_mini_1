@@ -16,6 +16,9 @@ private:
     vector<gate*> fanInGates;
     vector<gate*> fanOutGates;
 
+    /* phase 2 */
+
+
 public:
     gate();
     gate(string name);

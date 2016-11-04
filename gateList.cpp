@@ -31,12 +31,12 @@ gate* gateList::searchGate(string name) {
     return NULL;
 }
 
-gate* gateList::searchNameAndType(string name, string type)
+gate* gateList::searchNameNotType(string name, string type)
 {
     list<gate*>::iterator j;
     for(j=gateList.begin(); j!=gateList.end();j++)
     {
-        if ((*j)->getGateName() == name && (*j)->getTypeName() == type)
+        if ((*j)->getGateName() == name && (*j)->getTypeName() != type)
         {
             return *j;
         }
