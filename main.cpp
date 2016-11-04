@@ -25,6 +25,7 @@ inline string& ltrim(string& s);
 inline string& rtrim(string& s);
 inline string& trim(string& s);
 void write_result_delays(list<cell*> *mycellList);
+void write_result_slews(list<cell*> *mycellList);
 
 
 
@@ -157,134 +158,132 @@ int main(int argc, char *argv[]) {
             bool slewFlag = false;
             bool cellFlag = false;
 
-            if(strncmp(argv[2], "delays", 6) == 0){
-                if ( !fileInput.is_open() )
-                    cout<<"Could not open file\n";
-                else{
-                    while(!fileInput.eof()){
-                        getline(fileInput,aline);
+            if ( !fileInput.is_open() )
+                cout<<"Could not open file\n";
+            else{
+                while(!fileInput.eof()){
+                    getline(fileInput,aline);
 
-                        if(!aline.empty()) {
+                    if(!aline.empty()) {
 
-                            aline = trim(aline);
+                        aline = trim(aline);
 
-                            if(aline.substr(0, 5) == "cell "){
+                        if(aline.substr(0, 5) == "cell "){
 //                                cout << "cell------------------------" << endl;
-                                cellFlag = true;
-                                cellName = getIOname(aline);
-                                newCell = new cell(cellName);
+                            cellFlag = true;
+                            cellName = getIOname(aline);
+                            newCell = new cell(cellName);
 //                                cout << newCell->getCellName() << endl;
-                                mycellList.push_back(newCell);
+                            mycellList.push_back(newCell);
+                        }
+                        else if(aline.substr(0, 11) == "capacitance"){
+                            double cin = stod(readCapacitance(aline));
+                            newCell->setCin(cin);
+                        }
+                        else if(aline.substr(0, 10) == "cell_delay"){
+                            delayFlag = true;
+                        }
+                        else if(aline.substr(0, 7) == "index_1" && cellFlag == true){
+                            string index1 = readTauIn(aline);
+                            stringstream sstream(index1);
+                            double x;
+                            int i = 0;
+                            while(sstream >> x){
+                                (*newCell).TauIn[i] = x;
+                                if(sstream.peek() == ',') sstream.ignore();
+                                i++;
                             }
-                            else if(aline.substr(0, 11) == "capacitance"){
-                                double cin = stod(readCapacitance(aline));
-                                newCell->setCin(cin);
+                        }
+                        else if(aline.substr(0, 7) == "index_2" && cellFlag == true){
+                            string index2 = readTauIn(aline);
+                            stringstream sstream(index2);
+                            double x;
+                            int i = 0;
+                            while(sstream >> x){
+                                (*newCell).cL[i] = x;
+                                if(sstream.peek() == ',') sstream.ignore();
+                                i++;
                             }
-                            else if(aline.substr(0, 10) == "cell_delay"){
-                                delayFlag = true;
+                        }
+                        else if(delayFlag == true && slewFlag == false && aline.substr(0, 6) == "values"){
+                            string valueD = readValue(aline);
+//                                cout << valueD << endl;
+                            stringstream sstream(valueD);
+                            double x;
+                            int i = 0, j = 0;
+                            while(sstream >> x){
+                                (*newCell).delays[i][j] = x;
+//                                    cout << i << ", " << j << "----" << (*newCell).delays[i][j] << endl;
+                                if(sstream.peek() == ',') sstream.ignore();
+                                j++;
                             }
-                            else if(aline.substr(0, 7) == "index_1" && cellFlag == true){
-                                string index1 = readTauIn(aline);
-                                stringstream sstream(index1);
-                                double x;
-                                int i = 0;
-                                while(sstream >> x){
-                                    (*newCell).TauIn[i] = x;
-                                    if(sstream.peek() == ',') sstream.ignore();
-                                    i++;
-                                }
-                            }
-                            else if(aline.substr(0, 7) == "index_2" && cellFlag == true){
-                                string index2 = readTauIn(aline);
-                                stringstream sstream(index2);
-                                double x;
-                                int i = 0;
-                                while(sstream >> x){
-                                    (*newCell).cL[i] = x;
-                                    if(sstream.peek() == ',') sstream.ignore();
-                                    i++;
-                                }
-                            }
-                            else if(delayFlag == true && slewFlag == false && aline.substr(0, 6) == "values"){
+                            i++;
+
+                            for(int k = 0; k < 6; k++){
+                                getline(fileInput, aline);
+                                aline = trim(aline);
                                 string valueD = readValue(aline);
 //                                cout << valueD << endl;
                                 stringstream sstream(valueD);
                                 double x;
-                                int i = 0, j = 0;
+                                int j = 0;
                                 while(sstream >> x){
                                     (*newCell).delays[i][j] = x;
-//                                    cout << i << ", " << j << "----" << (*newCell).delays[i][j] << endl;
+//                                        cout << i << ", " << j << "----" << (*newCell).delays[i][j] << endl;
                                     if(sstream.peek() == ',') sstream.ignore();
                                     j++;
                                 }
                                 i++;
+                            }
+                            delayFlag = false;
 
-                                for(int k = 0; k < 6; k++){
-                                    getline(fileInput, aline);
-                                    aline = trim(aline);
-                                    string valueD = readValue(aline);
+                        }
+                        else if(aline.substr(0, 11) == "output_slew"){
+                            slewFlag = true;
+                        }
+                        else if(slewFlag == true && aline.substr(0, 6) == "values"){
+                            string valueD = readValue(aline);
 //                                cout << valueD << endl;
-                                    stringstream sstream(valueD);
-                                    double x;
-                                    int j = 0;
-                                    while(sstream >> x){
-                                        (*newCell).delays[i][j] = x;
-//                                        cout << i << ", " << j << "----" << (*newCell).delays[i][j] << endl;
-                                        if(sstream.peek() == ',') sstream.ignore();
-                                        j++;
-                                    }
-                                    i++;
-                                }
-                                delayFlag = false;
+                            stringstream sstream(valueD);
+                            double x;
+                            int i = 0, j = 0;
+                            while(sstream >> x){
+                                (*newCell).slews[i][j] = x;
+//                                    cout << i << ", " << j << "----" << (*newCell).slews[i][j] << endl;
+                                if(sstream.peek() == ',') sstream.ignore();
+                                j++;
+                            }
+                            i++;
 
-                            }
-                            else if(aline.substr(0, 11) == "output_slew"){
-                                slewFlag = true;
-                            }
-                            else if(slewFlag == true && aline.substr(0, 6) == "values"){
+                            for(int k = 0; k < 6; k++){
+                                getline(fileInput, aline);
+                                aline = trim(aline);
                                 string valueD = readValue(aline);
 //                                cout << valueD << endl;
                                 stringstream sstream(valueD);
                                 double x;
-                                int i = 0, j = 0;
+                                int j = 0;
                                 while(sstream >> x){
                                     (*newCell).slews[i][j] = x;
-//                                    cout << i << ", " << j << "----" << (*newCell).slews[i][j] << endl;
+//                                        cout << i << ", " << j << "----" << (*newCell).slews[i][j] << endl;
                                     if(sstream.peek() == ',') sstream.ignore();
                                     j++;
                                 }
                                 i++;
-
-                                for(int k = 0; k < 6; k++){
-                                    getline(fileInput, aline);
-                                    aline = trim(aline);
-                                    string valueD = readValue(aline);
-//                                cout << valueD << endl;
-                                    stringstream sstream(valueD);
-                                    double x;
-                                    int j = 0;
-                                    while(sstream >> x){
-                                        (*newCell).slews[i][j] = x;
-//                                        cout << i << ", " << j << "----" << (*newCell).slews[i][j] << endl;
-                                        if(sstream.peek() == ',') sstream.ignore();
-                                        j++;
-                                    }
-                                    i++;
-                                }
-
-                                slewFlag = false;
-                                cellFlag = false;
                             }
+
+                            slewFlag = false;
+                            cellFlag = false;
                         }
                     }
                 }
+            }
 
+            if(strncmp(argv[2], "delays", 6) == 0){
                 write_result_delays(&mycellList);
             }
             else if(strncmp(argv[2], "slews", 6) == 0){
-
-
-//                write_result_slews();
+                write_result_slews(&mycellList);
             }
             else {
                 cout<<"usage: "<< argv[0] <<" read_nldm <arguments> <filename>\n <arguments> options: delays, slews\n";
@@ -346,7 +345,7 @@ void write_result_ckt(int inputCount, int outputCount, string fileName, gateList
 }
 
 void write_result_delays(list<cell*> *mycellList){
-    string resultFile = "read_nldm.out";
+    string resultFile = "delay_LUT.txt";
     ofstream result;
     list<cell*>::iterator k;
 
@@ -376,6 +375,47 @@ void write_result_delays(list<cell*> *mycellList){
                 result << (*k)->delays[i][j] << ",";
             }
             result << (*k)->delays[i][6] << ";" << endl;
+        }
+
+        result << endl;
+
+    }
+    result << "------------------------------------------------" << endl;
+    result.close();
+    cout << "Result is output to the file: " << resultFile << endl;
+}
+
+void write_result_slews(list<cell*> *mycellList){
+    string resultFile = "slew_LUT.txt";
+    ofstream result;
+    list<cell*>::iterator k;
+
+    result.open(resultFile.c_str());
+
+    result << "------------------------------------------------" << endl;
+    for( k = mycellList->begin(); k != mycellList->end(); k++) {
+        result << "cell: " << (*k)->getCellName() << endl;
+
+        result << "input slews: " << endl;
+        for(int i = 0; i < 6; i++){
+            result << (*k)->TauIn[i] << ",";
+        }
+        result << (*k)->TauIn[6] << endl;
+
+        result << "load cap: " << endl;
+        for(int i = 0; i < 6; i++){
+            result << (*k)->cL[i] << ",";
+        }
+        result << (*k)->cL[6] << endl;
+
+        result << endl;
+
+        result << "slews: " << endl;
+        for(int i = 0; i < 7; i++){
+            for(int j = 0; j < 6; j++){
+                result << (*k)->slews[i][j] << ",";
+            }
+            result << (*k)->slews[i][6] << ";" << endl;
         }
 
         result << endl;
