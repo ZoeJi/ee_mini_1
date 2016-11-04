@@ -602,6 +602,5 @@ inline string& rtrim(string& s)
 //trim a sting from left & right
 inline string& trim(string& s)
 {
-    const char* t = " \t\n\r\f\v";
     return ltrim(rtrim(s));
 }
