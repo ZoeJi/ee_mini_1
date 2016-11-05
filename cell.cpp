@@ -9,7 +9,7 @@ cell::cell(){
 }
 cell::cell(string name){
     cellName = name;
-};
+}
 
 void cell::setCin(double cin){
     Cin = cin;
@@ -21,4 +21,12 @@ double* cell::getTauInArray(){
 
 string cell::getCellName(){
     return cellName;
-};
+}
+
+string cell::getCellType(){
+    return cellType;
+}
+
+void cell::setCellType(string type) {
+    cellType = type;
+}

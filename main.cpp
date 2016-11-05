@@ -21,6 +21,7 @@ string discardSpace(string str);
 string readCapacitance(string str);
 string readTauIn(string str);
 string readValue(string str);
+string readCellType(string str);
 inline string& ltrim(string& s);
 inline string& rtrim(string& s);
 inline string& trim(string& s);
@@ -169,11 +170,11 @@ int main(int argc, char *argv[]) {
                         aline = trim(aline);
 
                         if(aline.substr(0, 5) == "cell "){
-//                                cout << "cell------------------------" << endl;
                             cellFlag = true;
                             cellName = getIOname(aline);
                             newCell = new cell(cellName);
-//                                cout << newCell->getCellName() << endl;
+                            string cellType = readCellType(cellName);
+                            newCell->setCellType(cellType);
                             mycellList.push_back(newCell);
                         }
                         else if(aline.substr(0, 11) == "capacitance"){
@@ -482,6 +483,16 @@ string readGateName(string str)
     }
     return str;
 
+}
+
+string readCellType(string str) {
+    int a;
+    a = str.find('_');
+    str = str.substr(0, a);
+    if(isdigit(str[a-1])){
+        str = str.substr(0, a-1);
+    }
+    return str;
 }
 
 vector<string> readGateFanin(string str)

@@ -10,6 +10,7 @@ class cell {
 private:
     string cellName;
     double Cin;
+    string cellType;
 
 public:
     double TauIn[7];
@@ -21,6 +22,8 @@ public:
     void setCin(double cin);
     double* getTauInArray();
     string getCellName();
+    string getCellType();
+    void setCellType(string type);
 };
 
 
