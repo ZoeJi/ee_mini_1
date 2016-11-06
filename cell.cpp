@@ -27,6 +27,10 @@ string cell::getCellType(){
     return cellType;
 }
 
+double cell::getCin(){
+    return Cin;
+}
+
 void cell::setCellType(string type) {
     cellType = type;
 }

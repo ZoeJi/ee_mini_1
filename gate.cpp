@@ -9,6 +9,7 @@ using namespace std;
 gate::gate()
 {
     gateName = "init";
+    criticalPathPtr = NULL;
 }
 
 gate::gate(string name)
@@ -49,4 +50,82 @@ vector<gate*>* gate::getFainPtrs()
 vector<gate*>* gate::getFanoutPtrs()
 {
     return &fanOutGates;
+}
+
+void gate::setCriticalPtr(gate* ptr)
+{
+    criticalPathPtr = ptr;
+}
+
+gate* gate::getCriticalPtr() {
+    return criticalPathPtr;
+}
+
+void gate::setaOut(double aout){
+    aOut = aout;
+}
+
+void gate::setTauOut(double tauout){
+    tauOut = tauout;
+}
+
+void gate::setCin(double cin){
+    cIn = cin;
+}
+
+double gate::getCin(){
+    return cIn;
+}
+
+
+double gate::getCout(){
+    return cOut;
+}
+
+void gate::setCout(double cout){
+    cOut = cout;
+}
+
+void gate::incrFaninNumber() {
+    faninNumber++;
+}
+
+int gate::getFaninNumber() {
+    return faninNumber;
+}
+
+void gate::incrCompletedFaninNumber() {
+    completeFaninNum += 1;
+}
+
+int gate::getCompletedFaninNumber() {
+    return completeFaninNum;
+}
+
+void gate::incrFanoutNumber(){
+    fanoutNumber++;
+}
+
+int gate::getFanoutNumber(){
+    return fanoutNumber;
+}
+
+double gate::getAout(){
+    return aOut;
+}
+
+double gate::getTauOut() {
+    return tauOut;
+}
+
+void gate::setTauIn(double in) {
+    tauIn = in;
+}
+
+void gate::setaIn(double ain) {
+    aIn = ain;
+}
+
+void gate::setD(double dd) {
+    d = dd;
 }

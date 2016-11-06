@@ -20,6 +20,7 @@ public:
     cell();
     cell(string name);
     void setCin(double cin);
+    double getCin();
     double* getTauInArray();
     string getCellName();
     string getCellType();

@@ -48,3 +48,10 @@ list<gate*>* gateList::getGatelist(){
     return &gateList;
 }
 
+list<gate*>* gateList::getInputs(){
+    return &inputs;
+}
+list<gate*>* gateList::getOutputs(){
+    return &outputs;
+}
+
