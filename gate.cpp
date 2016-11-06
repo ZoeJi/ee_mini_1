@@ -129,3 +129,15 @@ void gate::setaIn(double ain) {
 void gate::setD(double dd) {
     d = dd;
 }
+
+void gate::setReqTime(double time) {
+    reqTime = time;
+}
+
+double gate::getReqTime() {
+    return reqTime;
+}
+
+double gate::getD() {
+    return d;
+}

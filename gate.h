@@ -17,17 +17,18 @@ private:
     vector<gate*> fanOutGates;
 
     /* phase 2 */
-    double cIn; // capacitance
-    double cOut; // sum of all fanout Cin
-    double tauIn; // input_slew
-    double aIn; // fanin arrival time
-    double d; // cell delay corresponding to each path
-    double tauOut = -1; // output_slew---get from LUT
-    double aOut; // arrivel time out
-    gate* criticalPathPtr;
-    int faninNumber; // number of fanin gates
+    double cIn = 0; // capacitance
+    double cOut = -1.0; // sum of all fanout Cin
+    double tauIn = 0; // input_slew
+    double aIn = 0; // fanin arrival time
+    double d = 0; // cell delay corresponding to each path
+    double tauOut = 0; // output_slew---get from LUT
+    double aOut = 0; // arrivel time out
+    gate* criticalPathPtr = NULL;
+    int faninNumber = 0; // number of fanin gates
     int fanoutNumber = 0; // number of fanout gates
-    int completeFaninNum; // number of fanin gates that has been calculated
+    int completeFaninNum = 0; // number of fanin gates that has been calculated
+    double reqTime = 0;
 
 public:
     gate();
@@ -60,6 +61,9 @@ public:
     void setTauIn(double in);
     void setaIn(double ain);
     void setD(double dd);
+    double getD();
+    void setReqTime(double time);
+    double getReqTime();
 };
 
 #endif //EEMINIPROJECT_GATE_H

@@ -3,13 +3,17 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/gateList.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/gateType.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/main.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/gate.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/gateType.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/gate.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/gate.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cell.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cellList.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/main.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cellList.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/gateList.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cell.cpp" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">

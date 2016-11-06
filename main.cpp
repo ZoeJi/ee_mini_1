@@ -614,12 +614,17 @@ void traversCkt(gateList *myGateList, cellList *myCellList){
                 fanoutGate->setTauOut(tauOut);
                 fanoutGate->setCriticalPtr(thisGate);
             }
-            myQueue.push(fanoutGate);
-            checkSet.insert(fanoutGate->getGateName());
+
+            const bool is_in = checkSet.find(fanoutGate->getGateName()) != checkSet.end();
+            if(!is_in){
+                // if not in myQueue, push into myQueue
+                myQueue.push(fanoutGate);
+                checkSet.insert(fanoutGate->getGateName());
+            }
         }
     }
 
-    cout << "here after inputs" << endl;
+
 
     while(!myQueue.empty()) {
         thisGate = myQueue.front();
@@ -627,7 +632,7 @@ void traversCkt(gateList *myGateList, cellList *myCellList){
         // can calculate tauOut and aOut for this gate
         if(thisGate->getCompletedFaninNumber() == thisGate->getFaninNumber()){
 
-            cout << "pop out a gate: " << thisGate->getGateName() << endl;
+//            cout << "find a completed gate: " << thisGate->getGateName() << endl;
 
             // find all fanOuts
             if(thisGate->getFanoutNumber() != 0){
@@ -645,6 +650,9 @@ void traversCkt(gateList *myGateList, cellList *myCellList){
                     if(fanoutGate->getTypeName() == "OUTP"){
                         aIn = thisGate->getAout();
                         fanoutGate->setaOut(aIn);
+                        fanoutGate->setCriticalPtr(thisGate);
+                        cout << thisGate->getGateName() << "has a fanout gate is output: " << fanoutGate->getGateName() << endl;
+
                     }
                     else{
                         fanoutGate->incrCompletedFaninNumber();
@@ -671,6 +679,7 @@ void traversCkt(gateList *myGateList, cellList *myCellList){
                             tauOut = calculateDelaysOrSlews(thisCell, tauIn, cL, faninNum,0);
                             fanoutGate->setTauOut(tauOut);
                             fanoutGate->setCriticalPtr(thisGate);
+//                            cout << "critical############# " << fanoutGate->getCriticalPtr()->getGateName() << endl;
                         }
 
                         // check if this fanout gate already in myQueue
@@ -685,6 +694,7 @@ void traversCkt(gateList *myGateList, cellList *myCellList){
 
                 }
             }
+
             checkSet.erase(thisGate->getGateName());
         }
         else {
@@ -693,7 +703,8 @@ void traversCkt(gateList *myGateList, cellList *myCellList){
         myQueue.pop();
     }
 
-    gate* criticalPathEnd = new gate();
+    gate* criticalPathEnd;
+
     // find max output arrival time
     double criticalAout = 0;
     for(it = myGateList->getOutputs()->begin(); it != myGateList->getOutputs()->end(); it++)
@@ -704,7 +715,60 @@ void traversCkt(gateList *myGateList, cellList *myCellList){
         }
     }
 
-    cout << criticalAout << endl;
+    list<gate*> criticalPath;
+
+    while(criticalPathEnd != NULL){
+        criticalPath.push_front(criticalPathEnd);
+        criticalPathEnd = criticalPathEnd->getCriticalPtr();
+    }
+
+    // calculate required time
+    double requireTime = criticalAout * 1.1;
+
+//    for(it = myGateList->getOutputs()->begin(); it != myGateList->getOutputs()->end(); it++){
+//        cout << (*it)->getGateName() << endl;
+//        (*it)->setReqTime(requireTime);
+//        cout << "OUTPUT req: " << (*it)->getReqTime() << endl;
+//        gate* prev = (*it)->getCriticalPtr();
+//        prev->setReqTime(requireTime);
+//        while( prev != NULL){
+////            cout << "delay: " << prev->getD() << endl;
+//            double newReq = prev->getReqTime() - prev->getD();
+//            prev->getCriticalPtr()->setReqTime(newReq);
+////            cout << "req: " << prev->getCriticalPtr()->getReqTime() << endl;
+//            prev = prev->getCriticalPtr();
+//        }
+//    }
+
+//    for(it = myGateList->getGatelist()->begin(); it != myGateList->getGatelist()->end(); it++){
+//
+//    }
+
+
+
+        // write reslult in a file
+    string resultFile = "ckt_traversal.txt";
+    ofstream result;
+    list<gate*>::iterator k;
+
+    result.open(resultFile.c_str());
+
+    result << "---------------------------------------------------------------" << endl;
+    result << "Circuit delay: " << criticalAout * 1000 << " ps" << endl << endl;
+
+    result << "Gate slacks: " << endl;
+
+    result << "Critical Path: " << endl;
+
+    for(it = criticalPath.begin(); it != criticalPath.end(); it++){
+        result << (*it)->getTypeName() << "-" << (*it)->getGateName() << ", ";
+    }
+
+    result << endl;
+    result << "---------------------------------------------------------------" << endl << endl;
+
+    result.close();
+    cout << "Result is output to the file: " << resultFile << endl;
 }
 
 double calculateDelaysOrSlews(cell *thisCell, double ipslew, double C_load, int faninNum, int delay_or_slew){
@@ -802,25 +866,42 @@ void calculateCout(gateList *myGateList, cellList *myCellList){
     list<gate*>::iterator j;
     vector<gate*>::iterator i;
     gate* fanoutGate;
-    double myCin = 0.0;
     double outputCout;
 
-    outputCout = 4 * myCellList->searchCellByType("NOT")->getCin();
+    outputCout = 4.0 * myCellList->searchCellByType("NOT")->getCin();
 
     for(j = myGateList->getOutputs()->begin(); j != myGateList->getOutputs()->end(); j++){
-        for(i = (*j)->getFainPtrs()->begin(); i != (*j)->getFainPtrs()->end(); i++){
-            (*i)->setCout(outputCout);
-        }
+            (*j)->setCin(outputCout);
+//        cout << (*j)->getCout() << endl;
     }
 
     for(j = myGateList->getGatelist()->begin(); j != myGateList->getGatelist()->end(); j++){
-        for(i = (*j)->getFanoutPtrs()->begin(); i != (*j)->getFanoutPtrs()->end(); i++){
-            fanoutGate = (*i);
-            myCin += fanoutGate->getCin();
+        double myCin = 0.0;
+        if((*j)->getTypeName() != "OUTP"){
+            for(i = (*j)->getFanoutPtrs()->begin(); i != (*j)->getFanoutPtrs()->end(); i++){
+                fanoutGate = (*i);
+                myCin = myCin + fanoutGate->getCin();
+            }
+            (*j)->setCout(myCin);
         }
-        (*j)->setCout(myCin);
-//        cout << (*j)->getCout() << endl;
     }
+
+    // for debug
+
+//    string resultFile = "testCap.out";
+//    ofstream result;
+//    list<gate*>::iterator k;
+//
+//    result.open(resultFile.c_str());
+//
+//    result << "------------------------------------------------" << endl;
+//
+//    for( k = myGateList->getGatelist()->begin(); k != myGateList->getGatelist()->end(); k++) {
+//        result<<(*k)->getTypeName() << "-" << (*k)->getGateName()<< ": " << (*k)->getCout() << endl;
+//    }
+//    result << "------------------------------------------------" << endl;
+//    result.close();
+//    cout << "Result is output to the file: " << resultFile << endl;
 }
 
 void write_result_ckt(int inputCount, int outputCount, string fileName, gateList *myGateList){
@@ -1024,6 +1105,9 @@ string readCellType(string str) {
     }
     if(str == "INV"){
         str = "NOT";
+    }
+    if(str == "BUF"){
+        str = "BUFF";
     }
     return str;
 }
